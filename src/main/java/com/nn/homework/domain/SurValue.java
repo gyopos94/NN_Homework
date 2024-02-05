@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Data
-@Table(name = "dbo.SurValues")
+@Table(name = "sur_value")
 public class SurValue {
 
   @Id
@@ -22,7 +22,7 @@ public class SurValue {
   private String chdrnum;
 
   @Column(nullable = false, precision = 15, scale = 2)
-  private BigDecimal survalue;
+  private BigDecimal SurrenderValue;
 
   @Column(nullable = false, length = 1)
   private String company;
