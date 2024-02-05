@@ -1,6 +1,7 @@
 package com.nn.homework;
 
 
+import com.nn.homework.scheduler.SchedulingPropertiesConfiguration;
 import java.util.Map;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecutionException;
@@ -11,10 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
-public class HomeworkApplication implements CommandLineRunner {
+@EnableConfigurationProperties(SchedulingPropertiesConfiguration.class)
+public class HomeworkApplication {
 
   @Autowired
   private JobLauncher jobLauncher;
@@ -25,7 +28,7 @@ public class HomeworkApplication implements CommandLineRunner {
   public static void main(String[] args) {
     SpringApplication.run(HomeworkApplication.class, args);}
 
-  @Override
+/*  @Override
   public void run(String... args) throws Exception {
     Map<String, Job> jobs = applicationContext.getBeansOfType(Job.class);
 
@@ -40,7 +43,7 @@ public class HomeworkApplication implements CommandLineRunner {
         e.printStackTrace();
       }
     });
-  }
+  }*/
 
 
 }
