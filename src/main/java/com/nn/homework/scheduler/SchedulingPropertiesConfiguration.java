@@ -15,6 +15,7 @@ public class SchedulingPropertiesConfiguration {
 
   @Data
   public static class JobProperties {
+
     private String cron;
   }
 }
