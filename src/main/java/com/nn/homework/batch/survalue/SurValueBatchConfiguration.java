@@ -31,7 +31,7 @@ public class SurValueBatchConfiguration {
   private static final String[] NAMES = {"Company", "Chdrnum", "SurrenderValue"};
   private static final Range[] RANGES = {new Range(1, 1), new Range(2, 9), new Range(10, 24)};
 
-  @Bean(name = JOB_NAME)
+  @Bean
   public Job importSurValueJob(JobRepository jobRepository, Step surValueStep1,
       SurValueJobCompletionNotificationListener listener) {
     return new JobBuilder(JOB_NAME, jobRepository)

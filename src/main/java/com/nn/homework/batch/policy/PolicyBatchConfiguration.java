@@ -35,7 +35,7 @@ public class PolicyBatchConfiguration {
       "chdrnum, cownnum, owner_name, lifc_num, lifc_name, aracde, agntnum, mail_address) " +
       "VALUES (:chdrnum, :cownnum, :ownerName, :lifcNum, :lifcName, :aracde, :agntnum, :mailAddress)";
 
-  @Bean(name = JOB_NAME)
+  @Bean
   public Job importPolicyJob(JobRepository jobRepository, Step policyStep1,
       PolicyJobCompletionNotificationListener listener) {
     return new JobBuilder(JOB_NAME, jobRepository)

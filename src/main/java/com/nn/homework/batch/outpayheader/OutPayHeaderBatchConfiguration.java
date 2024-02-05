@@ -45,7 +45,7 @@ public class OutPayHeaderBatchConfiguration {
       "VALUES (:clntnum, :chdrnum, :letterType, :printDate, :dataID, " +
       ":clntName, :clntAddress, :role1, :cownNum, :cownName)";
 
-  @Bean(name = JOB_NAME)
+  @Bean
   public Job importOutPayHeaderJob(JobRepository jobRepository, Step outPayHeaderStep1,
       OutPayHeaderJobCompletionNotificationListener listener) {
     return new JobBuilder(JOB_NAME, jobRepository)
@@ -93,28 +93,31 @@ public class OutPayHeaderBatchConfiguration {
 
   private Map<Class<?>, PropertyEditorSupport> getCustomEditors() {
     Map<Class<?>, PropertyEditorSupport> customEditors = new HashMap<>();
-    customEditors.put(LocalDate.class, new PropertyEditorSupport() {
-      @Override
-      public void setAsText(String text) throws IllegalArgumentException {
-        try {
-          setValue(LocalDate.parse(text, DateTimeFormatter.ofPattern("yyyyMMdd")));
-        } catch (DateTimeParseException e) {
-          setValue(null);
-        }
-      }
-    });
-
-    customEditors.put(BigDecimal.class, new PropertyEditorSupport() {
-      @Override
-      public void setAsText(String text) throws IllegalArgumentException {
-        try {
-          setValue(new BigDecimal(text));
-        } catch (NumberFormatException e) {
-          setValue(BigDecimal.ZERO);
-        }
-      }
-    });
+    customEditors.put(LocalDate.class, new LocalDateEditor());
+    customEditors.put(BigDecimal.class, new BigDecimalEditor());
     return customEditors;
+  }
+
+  public static class LocalDateEditor extends PropertyEditorSupport {
+    @Override
+    public void setAsText(String text) throws IllegalArgumentException {
+      try {
+        setValue(LocalDate.parse(text, DateTimeFormatter.ofPattern("yyyyMMdd")));
+      } catch (DateTimeParseException e) {
+        setValue(null);
+      }
+    }
+  }
+
+  public static class BigDecimalEditor extends PropertyEditorSupport {
+    @Override
+    public void setAsText(String text) throws IllegalArgumentException {
+      try {
+        setValue(new BigDecimal(text));
+      } catch (NumberFormatException e) {
+        setValue(BigDecimal.ZERO);
+      }
+    }
   }
 
   @Bean
