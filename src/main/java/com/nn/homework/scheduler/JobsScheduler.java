@@ -38,17 +38,17 @@ public class JobsScheduler {
     this.jobLaunchingService = jobLaunchingService;
   }
 
-  @Scheduled(cron = "0 0/5 * * * ?") // 5 minutes
+  @Scheduled(cron = "${scheduler.cron.survalue}")
   public void runSurValueJob() {
     launchJob(SUR_VALUE_JOB_NAME);
   }
 
-  @Scheduled(cron = "0 0/5 * * * ?") // 5 minutes
+  @Scheduled(cron = "${scheduler.cron.policy}")
   public void runPolicyJob() {
     launchJob(POLICY_JOB_NAME);
   }
 
-  @Scheduled(cron = "0 0/3 * * * ?") // 3 minutes
+  @Scheduled(cron = "${scheduler.cron.outpayheader}")
   public void runOutPayHeaderJob() {
     launchJob(OUT_PAY_HEADER_JOB_NAME);
   }

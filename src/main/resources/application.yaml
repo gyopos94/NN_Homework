@@ -18,3 +18,9 @@ spring:
   batch:
     job:
       enabled: false
+
+scheduler:
+  cron:
+    survalue: 0 * * * * ? # Every 1 minute
+    policy: 0 0/5 * * * ? # Every 5 minutes
+    outpayheader: 0 0/5 * * * ? # Every 5 minutes
