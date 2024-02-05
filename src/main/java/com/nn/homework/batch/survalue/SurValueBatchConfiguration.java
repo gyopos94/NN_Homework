@@ -19,6 +19,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.transaction.PlatformTransactionManager;
 
+/**
+ * Configuration class for batch processing of SurValue entities.
+ *
+ * <p>This class sets up a Spring Batch job designed to read SurValue data from a fixed-length
+ * formatted text file and write it into a database. It configures the necessary components for the
+ * job, including item readers and writers, and the steps involved in the data processing.</p>
+ */
 @Configuration
 public class SurValueBatchConfiguration {
 
@@ -31,6 +38,14 @@ public class SurValueBatchConfiguration {
   private static final String[] NAMES = {"Company", "Chdrnum", "SurrenderValue"};
   private static final Range[] RANGES = {new Range(1, 1), new Range(2, 9), new Range(10, 24)};
 
+  /**
+   * Configures the job responsible for importing SurValue data.
+   *
+   * @param jobRepository JobRepository used for job persistence.
+   * @param surValueStep1 Step that defines the bulk of the SurValue import process.
+   * @param listener      Listener that acts upon completion of the SurValue import job.
+   * @return A fully configured Job instance for importing SurValue data.
+   */
   @Bean
   public Job importSurValueJob(JobRepository jobRepository, Step surValueStep1,
       SurValueJobCompletionNotificationListener listener) {
@@ -40,6 +55,17 @@ public class SurValueBatchConfiguration {
         .build();
   }
 
+  /**
+   * Defines the step for processing SurValue data, including reading from the file and writing to
+   * the database.
+   *
+   * @param jobRepository               JobRepository used for job persistence.
+   * @param transactionManager          PlatformTransactionManager used for transaction management
+   *                                    within the step.
+   * @param surValueFlatFileItemReader  Reader configured to read SurValue data from a flat file.
+   * @param surValueJdbcBatchItemWriter Writer configured to write SurValue data into the database.
+   * @return A Step configured to process SurValue data.
+   */
   @Bean
   public Step surValueStep1(JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
@@ -52,6 +78,12 @@ public class SurValueBatchConfiguration {
         .build();
   }
 
+  /**
+   * Configures the FlatFileItemReader for reading SurValue data from a fixed-length formatted
+   * file.
+   *
+   * @return A FlatFileItemReader instance configured to read SurValue data.
+   */
   @Bean
   public FlatFileItemReader<SurValue> surValueFlatFileItemReader() {
     FlatFileItemReader<SurValue> reader = new FlatFileItemReader<>();
@@ -76,6 +108,12 @@ public class SurValueBatchConfiguration {
     return reader;
   }
 
+  /**
+   * Configures the JdbcBatchItemWriter for writing SurValue data into the database.
+   *
+   * @param dataSource DataSource providing the connection to the database.
+   * @return A JdbcBatchItemWriter instance configured for SurValue data.
+   */
   @Bean
   public JdbcBatchItemWriter<SurValue> surValueJdbcBatchItemWriter(DataSource dataSource) {
     return new JdbcBatchItemWriterBuilder<SurValue>()

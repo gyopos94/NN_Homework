@@ -15,6 +15,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service for launching batch jobs within the application context.
+ *
+ * <p>This service provides functionality to launch batch jobs by name, utilizing
+ * Spring Batch's {@link JobLauncher} to initiate job executions with the current system time as a
+ * parameter. It supports launching specific predefined jobs, namely 'OutPayHeader', 'Policy', and
+ * 'SurValue', identified by their respective job names.</p>
+ *
+ * <p>The service encapsulates error handling for common job execution issues, such as
+ * jobs already running, jobs being complete, and invalid job parameters. It translates these
+ * scenarios into a {@link JobLaunchException}, providing a consistent error handling mechanism for
+ * clients of this service.</p>
+ */
 @Service
 public class JobLaunchingService {
 
@@ -46,6 +59,20 @@ public class JobLaunchingService {
   @Qualifier("importSurValueJob")
   private Job surValueJob;
 
+  /**
+   * Launches a batch job based on the given job name.
+   *
+   * <p>This method selects the appropriate job to launch based on the provided
+   * job name and initiates its execution with a unique parameter ("time") to ensure the job
+   * instance is unique. It handles specific job execution exceptions by logging the error and
+   * rethrowing a {@link JobLaunchException} with a message appropriate to the caught
+   * exception.</p>
+   *
+   * @param jobName The name of the job to be launched.
+   * @return {@code true} if the job execution was unsuccessful, otherwise {@code false}.
+   * @throws JobLaunchException If an error occurs during job launching or if an unexpected
+   *                            exception is caught.
+   */
   public boolean launchJob(String jobName) throws JobLaunchException {
     Job jobToLaunch;
     switch (jobName) {

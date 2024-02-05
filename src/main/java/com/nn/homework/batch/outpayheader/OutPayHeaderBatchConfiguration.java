@@ -25,6 +25,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.transaction.PlatformTransactionManager;
 
+/**
+ * Configuration class for batch processing of OutPayHeader entities.
+ * <p>
+ * This class is responsible for configuring the batch job that imports OutPayHeader data from a
+ * delimited text file into a database. It includes configurations for the job, steps, item reader,
+ * and item writer.
+ * </p>
+ */
 @Configuration
 public class OutPayHeaderBatchConfiguration {
 
@@ -45,6 +53,14 @@ public class OutPayHeaderBatchConfiguration {
       "VALUES (:clntnum, :chdrnum, :letterType, :printDate, :dataID, " +
       ":clntName, :clntAddress, :role1, :cownNum, :cownName)";
 
+  /**
+   * Configures the batch job for importing OutPayHeader entities.
+   *
+   * @param jobRepository     JobRepository for job persistence.
+   * @param outPayHeaderStep1 Step for processing OutPayHeader data.
+   * @param listener          Listener for job completion notifications.
+   * @return Configured Job instance.
+   */
   @Bean
   public Job importOutPayHeaderJob(JobRepository jobRepository, Step outPayHeaderStep1,
       OutPayHeaderJobCompletionNotificationListener listener) {
@@ -54,6 +70,15 @@ public class OutPayHeaderBatchConfiguration {
         .build();
   }
 
+  /**
+   * Configures the step for processing OutPayHeader data.
+   *
+   * @param jobRepository                   JobRepository for job persistence.
+   * @param transactionManager              PlatformTransactionManager for transaction management.
+   * @param outPayHeaderFlatFileItemReader  Reader for OutPayHeader data from a flat file.
+   * @param outPayHeaderJdbcBatchItemWriter Writer for OutPayHeader data to the database.
+   * @return Configured Step instance.
+   */
   @Bean
   public Step outPayHeaderStep1(JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
@@ -66,6 +91,11 @@ public class OutPayHeaderBatchConfiguration {
         .build();
   }
 
+  /**
+   * Configures the FlatFileItemReader for reading OutPayHeader data from a flat file.
+   *
+   * @return Configured FlatFileItemReader instance.
+   */
   @Bean
   public FlatFileItemReader<OutPayHeader> outPayHeaderFlatFileItemReader() {
     FlatFileItemReader<OutPayHeader> reader = new FlatFileItemReader<>();
@@ -91,6 +121,11 @@ public class OutPayHeaderBatchConfiguration {
     return reader;
   }
 
+  /**
+   * Returns a map of custom editors for property conversion.
+   *
+   * @return Map of Class to PropertyEditorSupport.
+   */
   private Map<Class<?>, PropertyEditorSupport> getCustomEditors() {
     Map<Class<?>, PropertyEditorSupport> customEditors = new HashMap<>();
     customEditors.put(LocalDate.class, new LocalDateEditor());
@@ -98,7 +133,26 @@ public class OutPayHeaderBatchConfiguration {
     return customEditors;
   }
 
+  /**
+   * Configures the JdbcBatchItemWriter for writing OutPayHeader data to the database.
+   *
+   * @param dataSource DataSource for database connections.
+   * @return Configured JdbcBatchItemWriter instance.
+   */
+  @Bean
+  public JdbcBatchItemWriter<OutPayHeader> outPayHeaderJdbcBatchItemWriter(DataSource dataSource) {
+    return new JdbcBatchItemWriterBuilder<OutPayHeader>()
+        .sql(INSERT_SQL)
+        .dataSource(dataSource)
+        .beanMapped()
+        .build();
+  }
+
+  /**
+   * Property editor for converting strings to LocalDate objects.
+   */
   public static class LocalDateEditor extends PropertyEditorSupport {
+
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
       try {
@@ -109,7 +163,11 @@ public class OutPayHeaderBatchConfiguration {
     }
   }
 
+  /**
+   * Property editor for converting strings to BigDecimal objects.
+   */
   public static class BigDecimalEditor extends PropertyEditorSupport {
+
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
       try {
@@ -118,14 +176,5 @@ public class OutPayHeaderBatchConfiguration {
         setValue(BigDecimal.ZERO);
       }
     }
-  }
-
-  @Bean
-  public JdbcBatchItemWriter<OutPayHeader> outPayHeaderJdbcBatchItemWriter(DataSource dataSource) {
-    return new JdbcBatchItemWriterBuilder<OutPayHeader>()
-        .sql(INSERT_SQL)
-        .dataSource(dataSource)
-        .beanMapped()
-        .build();
   }
 }
