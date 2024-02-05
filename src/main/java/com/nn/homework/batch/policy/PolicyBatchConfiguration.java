@@ -1,6 +1,5 @@
 package com.nn.homework.batch.policy;
 
-
 import com.nn.homework.domain.Policy;
 import javax.sql.DataSource;
 import org.springframework.batch.core.Job;
@@ -22,11 +21,24 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class PolicyBatchConfiguration {
 
+  private static final String JOB_NAME = "importPolicyJob";
+  private static final String STEP_NAME = "policyStep1";
+  private static final String READER_NAME = "policyItemReader";
+  private static final String FILE_PATH = "/input/CUSTCOMP01.txt";
+  private static final String FILE_ENCODING = "WINDOWS-1252";
+  private static final String DELIMITER = "|";
+  private static final String[] FIELD_NAMES = new String[]{
+      "Chdrnum", "Cownnum", "OwnerName", "LifcNum", "LifcName", "Aracde", "Agntnum", "MailAddress"
+  };
+  private static final int[] INCLUDED_FIELDS = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
+  private static final String INSERT_SQL = "INSERT INTO policy (" +
+      "chdrnum, cownnum, owner_name, lifc_num, lifc_name, aracde, agntnum, mail_address) " +
+      "VALUES (:chdrnum, :cownnum, :ownerName, :lifcNum, :lifcName, :aracde, :agntnum, :mailAddress)";
 
-  @Bean(name = "importPolicyJob")
+  @Bean(name = JOB_NAME)
   public Job importPolicyJob(JobRepository jobRepository, Step policyStep1,
       PolicyJobCompletionNotificationListener listener) {
-    return new JobBuilder("importPolicyJob", jobRepository)
+    return new JobBuilder(JOB_NAME, jobRepository)
         .listener(listener)
         .start(policyStep1)
         .build();
@@ -37,7 +49,7 @@ public class PolicyBatchConfiguration {
       PlatformTransactionManager transactionManager,
       FlatFileItemReader<Policy> policyFlatFileItemReader,
       JdbcBatchItemWriter<Policy> policyJdbcBatchItemWriter) {
-    return new StepBuilder("policyStep1", jobRepository)
+    return new StepBuilder(STEP_NAME, jobRepository)
         .<Policy, Policy>chunk(10, transactionManager)
         .reader(policyFlatFileItemReader)
         .writer(policyJdbcBatchItemWriter)
@@ -47,15 +59,15 @@ public class PolicyBatchConfiguration {
   @Bean
   public FlatFileItemReader<Policy> policyFlatFileItemReader() {
     FlatFileItemReader<Policy> reader = new FlatFileItemReader<>();
-    reader.setResource(new ClassPathResource("/input/CUSTCOMP01.txt"));
-    reader.setName("policyItemReader");
+    reader.setResource(new ClassPathResource(FILE_PATH));
+    reader.setName(READER_NAME);
+    reader.setEncoding(FILE_ENCODING);
+
 
     DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();
-    tokenizer.setDelimiter("|");
-    tokenizer.setNames(
-        "Chdrnum", "Cownnum", "OwnerName", "LifcNum", "LifcName", "Aracde", "Agntnum",
-        "MailAddress");
-    tokenizer.setIncludedFields(0, 1, 2, 3, 4, 5, 6, 7);
+    tokenizer.setDelimiter(DELIMITER);
+    tokenizer.setNames(FIELD_NAMES);
+    tokenizer.setIncludedFields(INCLUDED_FIELDS);
 
     BeanWrapperFieldSetMapper<Policy> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
     fieldSetMapper.setTargetType(Policy.class);
@@ -69,23 +81,12 @@ public class PolicyBatchConfiguration {
     return reader;
   }
 
-
   @Bean
   public JdbcBatchItemWriter<Policy> policyJdbcBatchItemWriter(DataSource dataSource) {
     return new JdbcBatchItemWriterBuilder<Policy>()
-        .sql("INSERT INTO policy (" +
-            "chdrnum, " +
-            "cownnum, " +
-            "owner_name, " +
-            "lifc_num, " +
-            "lifc_name, " +
-            "aracde, " +
-            "agntnum, " +
-            "mail_address) " +
-            "VALUES (:chdrnum, :cownnum, :ownerName, :lifcNum, :lifcName, :aracde, :agntnum, :mailAddress)")
+        .sql(INSERT_SQL)
         .dataSource(dataSource)
         .beanMapped()
         .build();
   }
-
 }

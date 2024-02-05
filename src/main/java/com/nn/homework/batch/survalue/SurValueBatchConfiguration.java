@@ -22,11 +22,19 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class SurValueBatchConfiguration {
 
+  private static final String JOB_NAME = "importSurValueJob";
+  private static final String STEP_NAME = "surValueStep1";
+  private static final String READER_NAME = "SurValueItemReader";
+  private static final String FILE_PATH = "/input/ZTPSPF.txt";
+  private static final String FILE_ENCODING = "WINDOWS-1252";
+  private static final String INSERT_SQL = "INSERT INTO sur_value (chdrnum, surrender_value, company) VALUES (:Chdrnum, :SurrenderValue, :Company)";
+  private static final String[] NAMES = {"Company", "Chdrnum", "SurrenderValue"};
+  private static final Range[] RANGES = {new Range(1, 1), new Range(2, 9), new Range(10, 24)};
 
-  @Bean(name = "importSurValueJob")
+  @Bean(name = JOB_NAME)
   public Job importSurValueJob(JobRepository jobRepository, Step surValueStep1,
       SurValueJobCompletionNotificationListener listener) {
-    return new JobBuilder("importSurValueJob", jobRepository)
+    return new JobBuilder(JOB_NAME, jobRepository)
         .listener(listener)
         .start(surValueStep1)
         .build();
@@ -37,7 +45,7 @@ public class SurValueBatchConfiguration {
       PlatformTransactionManager transactionManager,
       FlatFileItemReader<SurValue> surValueFlatFileItemReader,
       JdbcBatchItemWriter<SurValue> surValueJdbcBatchItemWriter) {
-    return new StepBuilder("surValueStep1", jobRepository)
+    return new StepBuilder(STEP_NAME, jobRepository)
         .<SurValue, SurValue>chunk(10, transactionManager)
         .reader(surValueFlatFileItemReader)
         .writer(surValueJdbcBatchItemWriter)
@@ -47,12 +55,13 @@ public class SurValueBatchConfiguration {
   @Bean
   public FlatFileItemReader<SurValue> surValueFlatFileItemReader() {
     FlatFileItemReader<SurValue> reader = new FlatFileItemReader<>();
-    reader.setResource(new ClassPathResource("/input/ZTPSPF.txt"));
-    reader.setName("SurValueItemReader");
+    reader.setResource(new ClassPathResource(FILE_PATH));
+    reader.setName(READER_NAME);
+    reader.setEncoding(FILE_ENCODING);
 
     FixedLengthTokenizer tokenizer = new FixedLengthTokenizer();
-    tokenizer.setNames("Company", "Chdrnum", "SurrenderValue");
-    tokenizer.setColumns(new Range(1, 1), new Range(2, 9), new Range(10, 24));
+    tokenizer.setNames(NAMES);
+    tokenizer.setColumns(RANGES);
     tokenizer.setStrict(false);
 
     BeanWrapperFieldSetMapper<SurValue> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
@@ -70,11 +79,7 @@ public class SurValueBatchConfiguration {
   @Bean
   public JdbcBatchItemWriter<SurValue> surValueJdbcBatchItemWriter(DataSource dataSource) {
     return new JdbcBatchItemWriterBuilder<SurValue>()
-        .sql("INSERT INTO sur_value (" +
-            "chdrnum, " +
-            "surrender_value, " +
-            "company) " +
-            "VALUES (:Chdrnum, :SurrenderValue, :Company)")
+        .sql(INSERT_SQL)
         .dataSource(dataSource)
         .beanMapped()
         .build();

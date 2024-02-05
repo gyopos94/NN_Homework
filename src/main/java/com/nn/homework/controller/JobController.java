@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -14,20 +14,29 @@ public class JobController {
 
   private static final Logger log = LoggerFactory.getLogger(JobController.class);
 
+  private static final String JOB_FAILED_RESPONSE = "Job failed to complete successfully.";
+  private static final String JOB_SUCCESS_RESPONSE = "Job launched successfully.";
+  private static final String ERROR_LAUNCHING_JOB_RESPONSE = "Error launching job: ";
+
   private final JobLaunchingService jobLaunchingService;
 
   public JobController(JobLaunchingService jobLaunchingService) {
     this.jobLaunchingService = jobLaunchingService;
   }
 
-  @GetMapping("/launch-job/{jobName}")
-  public ResponseEntity<String> launchJob(@PathVariable String jobName) {
-    log.debug("JobController.launchJob called");
+  @GetMapping("/launch-job")
+  public ResponseEntity<String> launchJob(@RequestParam String jobName) {
+    log.debug("JobController.launchJob called with jobName={}", jobName);
     try {
-      jobLaunchingService.launchJob(jobName);
-      return ResponseEntity.ok("Job launched successfully.");
+      boolean jobFailed = jobLaunchingService.launchJob(jobName);
+      if (jobFailed) {
+        return ResponseEntity.internalServerError().body(JOB_FAILED_RESPONSE);
+      } else {
+        return ResponseEntity.ok(JOB_SUCCESS_RESPONSE);
+      }
     } catch (JobLaunchException e) {
-      return ResponseEntity.internalServerError().body("Error launching job: " + e.getMessage());
+      return ResponseEntity.internalServerError()
+          .body(ERROR_LAUNCHING_JOB_RESPONSE + e.getMessage());
     }
   }
 }

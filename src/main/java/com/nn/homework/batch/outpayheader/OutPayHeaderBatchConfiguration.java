@@ -1,8 +1,6 @@
 package com.nn.homework.batch.outpayheader;
 
-
 import com.nn.homework.domain.OutPayHeader;
-import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,11 +28,27 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class OutPayHeaderBatchConfiguration {
 
+  private static final String JOB_NAME = "importOutPayHeaderJob";
+  private static final String STEP_NAME = "outPayHeaderStep1";
+  private static final String READER_NAME = "outPayHeaderItemReader";
+  private static final String FILE_PATH = "/input/OUTPH_CUP_20200204_1829.TXT";
+  private static final String FILE_ENCODING = "WINDOWS-1252";
+  private static final String DELIMITER = ";";
+  private static final String[] FIELD_NAMES = new String[]{
+      "clntnum", "chdrnum", "letterType", "printDate", "dataID", "clntName", "clntAddress",
+      "role1", "cownNum", "cownName"
+  };
+  private static final int[] INCLUDED_FIELDS = new int[]{0, 1, 2, 3, 4, 5, 6, 9, 11, 12};
+  private static final String INSERT_SQL = "INSERT INTO out_pay_header (" +
+      "clntnum, chdrnum, letter_type, print_date, dataID, " +
+      "clnt_name, clnt_address, role1, cown_num, cown_name) " +
+      "VALUES (:clntnum, :chdrnum, :letterType, :printDate, :dataID, " +
+      ":clntName, :clntAddress, :role1, :cownNum, :cownName)";
 
-  @Bean(name = "importOutPayHeaderJob")
+  @Bean(name = JOB_NAME)
   public Job importOutPayHeaderJob(JobRepository jobRepository, Step outPayHeaderStep1,
       OutPayHeaderJobCompletionNotificationListener listener) {
-    return new JobBuilder("importOutPayHeaderJob", jobRepository)
+    return new JobBuilder(JOB_NAME, jobRepository)
         .listener(listener)
         .start(outPayHeaderStep1)
         .build();
@@ -45,7 +59,7 @@ public class OutPayHeaderBatchConfiguration {
       PlatformTransactionManager transactionManager,
       FlatFileItemReader<OutPayHeader> outPayHeaderFlatFileItemReader,
       JdbcBatchItemWriter<OutPayHeader> outPayHeaderJdbcBatchItemWriter) {
-    return new StepBuilder("outPayHeaderStep1", jobRepository)
+    return new StepBuilder(STEP_NAME, jobRepository)
         .<OutPayHeader, OutPayHeader>chunk(10, transactionManager)
         .reader(outPayHeaderFlatFileItemReader)
         .writer(outPayHeaderJdbcBatchItemWriter)
@@ -55,21 +69,30 @@ public class OutPayHeaderBatchConfiguration {
   @Bean
   public FlatFileItemReader<OutPayHeader> outPayHeaderFlatFileItemReader() {
     FlatFileItemReader<OutPayHeader> reader = new FlatFileItemReader<>();
-    reader.setResource(new ClassPathResource("/input/OUTPH_CUP_20200204_1829.TXT"));
-    reader.setName("outPayHeaderItemReader");
-    reader.setEncoding("UTF-8"); // Adjust if necessary
+    reader.setResource(new ClassPathResource(FILE_PATH));
+    reader.setName(READER_NAME);
+    reader.setEncoding(FILE_ENCODING);
 
     DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();
-    tokenizer.setDelimiter(";");
-    tokenizer.setNames("clntnum", "chdrnum", "letterType", "printDate", "dataID", "clntName",
-        "clntAddress",
-        "role1", "cownNum", "cownName");
-    tokenizer.setIncludedFields(0, 1, 2, 3, 4, 5, 6, 9, 11, 12);
+    tokenizer.setDelimiter(DELIMITER);
+    tokenizer.setNames(FIELD_NAMES);
+    tokenizer.setIncludedFields(INCLUDED_FIELDS);
 
     BeanWrapperFieldSetMapper<OutPayHeader> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
     fieldSetMapper.setTargetType(OutPayHeader.class);
+    fieldSetMapper.setCustomEditors(getCustomEditors());
 
-    Map<Class<?>, PropertyEditor> customEditors = new HashMap<>();
+    DefaultLineMapper<OutPayHeader> lineMapper = new DefaultLineMapper<>();
+    lineMapper.setLineTokenizer(tokenizer);
+    lineMapper.setFieldSetMapper(fieldSetMapper);
+
+    reader.setLineMapper(lineMapper);
+
+    return reader;
+  }
+
+  private Map<Class<?>, PropertyEditorSupport> getCustomEditors() {
+    Map<Class<?>, PropertyEditorSupport> customEditors = new HashMap<>();
     customEditors.put(LocalDate.class, new PropertyEditorSupport() {
       @Override
       public void setAsText(String text) throws IllegalArgumentException {
@@ -91,28 +114,15 @@ public class OutPayHeaderBatchConfiguration {
         }
       }
     });
-
-    fieldSetMapper.setCustomEditors(customEditors);
-
-    reader.setLineMapper(new DefaultLineMapper<OutPayHeader>() {{
-      setLineTokenizer(tokenizer);
-      setFieldSetMapper(fieldSetMapper);
-    }});
-
-    return reader;
+    return customEditors;
   }
 
   @Bean
   public JdbcBatchItemWriter<OutPayHeader> outPayHeaderJdbcBatchItemWriter(DataSource dataSource) {
     return new JdbcBatchItemWriterBuilder<OutPayHeader>()
-        .sql("INSERT INTO out_pay_header (" +
-            "clntnum, chdrnum, letter_type, print_date, dataID, " +
-            "clnt_name, clnt_address, role1, cown_num, cown_name) " +
-            "VALUES (:clntnum, :chdrnum, :letterType, :printDate, :dataID, " +
-            ":clntName, :clntAddress, :role1, :cownNum, :cownName)")
+        .sql(INSERT_SQL)
         .dataSource(dataSource)
         .beanMapped()
         .build();
   }
-
 }

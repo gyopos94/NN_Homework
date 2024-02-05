@@ -2,7 +2,6 @@ package com.nn.homework.batch.outpayheader;
 
 
 import com.nn.homework.domain.OutPayHeader;
-import com.nn.homework.domain.Policy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
