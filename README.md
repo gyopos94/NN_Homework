@@ -34,21 +34,21 @@ You can manually trigger the predefined jobs using the REST API. Below are the c
 
 git bash
 ```console
-curl -X GET "http://localhost:8080/launch-job?jobName=OutPayHeader"
+curl -X GET "http://localhost:8080/api/v1/launch-job?jobName=OutPayHeader"
 ```
 
 ### Launch the Policy Job
 
 git bash
 ```console
-curl -X GET "http://localhost:8080/launch-job?jobName=Policy"
+curl -X GET "http://localhost:8080/api/v1/launch-job?jobName=Policy"
 ```
 
 ### Launch the SurValue Job
 
 git bash
 ```console
-curl -X GET "http://localhost:8080/launch-job?jobName=SurValue"
+curl -X GET "http://localhost:8080/api/v1/launch-job?jobName=SurValue"
 ```
 
 
