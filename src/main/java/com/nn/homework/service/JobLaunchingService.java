@@ -1,6 +1,6 @@
 package com.nn.homework.service;
 
-import com.nn.homework.exception.InvalidJobParameterException;
+import com.nn.homework.exception.JobLaunchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -35,7 +35,7 @@ public class JobLaunchingService {
   private Job surValueJob;
 
 
-  public void launchJob(String jobName) {
+  public void launchJob(String jobName) throws JobLaunchException {
     Job jobToLaunch;
     switch (jobName) {
       case "OutPayHeader":
@@ -48,24 +48,34 @@ public class JobLaunchingService {
         jobToLaunch = surValueJob;
         break;
       default:
-        throw new InvalidJobParameterException("Invalid job parameter: " + jobName);
+        throw new JobLaunchException("Invalid job parameter: " + jobName, null);
     }
     try {
       jobLauncher.run(jobToLaunch,
           new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
     } catch (JobExecutionAlreadyRunningException e) {
       log.error("JobExecutionAlreadyRunningException: The job is already running.", e);
+      throw new JobLaunchException(
+          "JobExecutionAlreadyRunningException: The job is already running.", e);
     } catch (JobRestartException e) {
       log.error("JobRestartException: A failure occurred in restarting the job.", e);
+      throw new JobLaunchException("JobRestartException: A failure occurred in restarting the job.",
+          e);
     } catch (JobInstanceAlreadyCompleteException e) {
       log.error(
+          "JobInstanceAlreadyCompleteException: The job has been already completed for the given parameters.",
+          e);
+      throw new JobLaunchException(
           "JobInstanceAlreadyCompleteException: The job has been already completed for the given parameters.",
           e);
     } catch (JobParametersInvalidException e) {
       log.error("JobParametersInvalidException: The parameters provided for the job are invalid.",
           e);
+      throw new JobLaunchException(
+          "JobParametersInvalidException: The parameters provided for the job are invalid.", e);
     } catch (Exception e) {
-      log.error("Exception: An unexpected error occurred while running the job.", e);
+      throw new JobLaunchException("Exception: An unexpected error occurred while running the job.",
+          e);
     }
   }
 }

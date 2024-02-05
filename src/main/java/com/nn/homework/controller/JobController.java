@@ -1,7 +1,6 @@
 package com.nn.homework.controller;
 
-import com.nn.homework.exception.InvalidJobParameterException;
-import com.nn.homework.scheduler.JobsScheduler;
+import com.nn.homework.exception.JobLaunchException;
 import com.nn.homework.service.JobLaunchingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +26,7 @@ public class JobController {
     try {
       jobLaunchingService.launchJob(jobName);
       return ResponseEntity.ok("Job launched successfully.");
-    } catch (InvalidJobParameterException e) {
-      return ResponseEntity.badRequest().body("Invalid job parameter: " + jobName);
-    } catch (Exception e) {
+    } catch (JobLaunchException e) {
       return ResponseEntity.internalServerError().body("Error launching job: " + e.getMessage());
     }
   }
