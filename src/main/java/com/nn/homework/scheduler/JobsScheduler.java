@@ -17,6 +17,12 @@ import org.springframework.stereotype.Component;
 public class JobsScheduler {
 
   private static final Logger log = LoggerFactory.getLogger(JobsScheduler.class);
+  private static final String TIME_PARAMETER_NAME = "time";
+  private static final String JOB_EXECUTION_ALREADY_RUNNING_EXCEPTION_MSG = "JobExecutionAlreadyRunningException: The job is already running.";
+  private static final String JOB_RESTART_EXCEPTION_MSG = "JobRestartException: A failure occurred in restarting the job.";
+  private static final String JOB_INSTANCE_ALREADY_COMPLETE_EXCEPTION_MSG = "JobInstanceAlreadyCompleteException: The job has been already completed for the given parameters.";
+  private static final String JOB_PARAMETERS_INVALID_EXCEPTION_MSG = "JobParametersInvalidException: The parameters provided for the job are invalid.";
+  private static final String EXCEPTION_MSG = "Exception: An unexpected error occurred while running the job.";
 
   private final JobLauncher jobLauncher;
   private final Job importOutPayHeaderJob;
@@ -39,37 +45,37 @@ public class JobsScheduler {
   @Scheduled(cron = "#{schedulingPropertiesConfiguration.surValue.cron}")
   public void runSurValueJob() {
     runJob(importSurValueJob,
-        new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
+        new JobParametersBuilder().addLong(TIME_PARAMETER_NAME, System.currentTimeMillis())
+            .toJobParameters());
   }
 
   @Scheduled(cron = "#{schedulingPropertiesConfiguration.policy.cron}")
   public void runPolicyJob() {
     runJob(importPolicyJob,
-        new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
+        new JobParametersBuilder().addLong(TIME_PARAMETER_NAME, System.currentTimeMillis())
+            .toJobParameters());
   }
 
   @Scheduled(cron = "#{schedulingPropertiesConfiguration.outPayHeader.cron}")
   public void runOutPayHeaderJob() {
     runJob(importOutPayHeaderJob,
-        new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
+        new JobParametersBuilder().addLong(TIME_PARAMETER_NAME, System.currentTimeMillis())
+            .toJobParameters());
   }
 
   private void runJob(Job job, JobParameters parameters) {
     try {
       jobLauncher.run(job, parameters);
     } catch (JobExecutionAlreadyRunningException e) {
-      log.error("JobExecutionAlreadyRunningException: The job is already running.", e);
+      log.error(JOB_EXECUTION_ALREADY_RUNNING_EXCEPTION_MSG, e);
     } catch (JobRestartException e) {
-      log.error("JobRestartException: A failure occurred in restarting the job.", e);
+      log.error(JOB_RESTART_EXCEPTION_MSG, e);
     } catch (JobInstanceAlreadyCompleteException e) {
-      log.error(
-          "JobInstanceAlreadyCompleteException: The job has been already completed for the given parameters.",
-          e);
+      log.error(JOB_INSTANCE_ALREADY_COMPLETE_EXCEPTION_MSG, e);
     } catch (JobParametersInvalidException e) {
-      log.error("JobParametersInvalidException: The parameters provided for the job are invalid.",
-          e);
+      log.error(JOB_PARAMETERS_INVALID_EXCEPTION_MSG, e);
     } catch (Exception e) {
-      log.error("Exception: An unexpected error occurred while running the job.", e);
+      log.error(EXCEPTION_MSG, e);
     }
   }
 }
