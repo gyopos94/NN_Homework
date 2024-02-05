@@ -1,16 +1,17 @@
 package com.nn.homework;
 
 
-import com.nn.homework.scheduler.SchedulingPropertiesConfiguration;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableConfigurationProperties(SchedulingPropertiesConfiguration.class)
+@EnableScheduling
+
 public class HomeworkApplication {
 
   @Autowired

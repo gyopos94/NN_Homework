@@ -18,11 +18,3 @@ spring:
   batch:
     job:
       enabled: false
-
-scheduling:
-  SurValue:
-    cron: "0 0 1 * * SUN" # Every Sunday at 1 AM
-  Policy:
-    cron: "0 0 1 * * ?" # Every day at 1 AM
-  OutPayHeader:
-    cron: "0 0 1 * * ?" # Every day at 1 AM
