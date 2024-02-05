@@ -6,7 +6,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 
 @Entity
 @Data
@@ -39,6 +41,16 @@ public class Policy {
   private String agntnum;
 
   @Column(length = 50)
+  @Setter(AccessLevel.NONE)
   private String mailAddress;
+
+  public void setMailAddress(String mailAddress) {
+    int maxLength = 50; // Maximum length for MAIL_ADDRESS column
+    if (mailAddress != null && mailAddress.length() > maxLength) {
+      this.mailAddress = mailAddress.substring(0, maxLength);
+    } else {
+      this.mailAddress = mailAddress;
+    }
+  }
 }
 
