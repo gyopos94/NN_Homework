@@ -7,8 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import lombok.Data;
-import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -29,7 +29,7 @@ public class OutPayHeader {
   private String letterType;
 
   @Column(nullable = false)
-  private LocalDateTime printDate;
+  private LocalDate printDate;
 
   @Column(length = 6)
   private String dataID;
@@ -41,7 +41,7 @@ public class OutPayHeader {
   private String clntAddress;
 
   @Column
-  private LocalDateTime regDate;
+  private LocalDate regDate;
 
   @Column(precision = 6, scale = 2)
   private BigDecimal benPercent;
@@ -80,7 +80,7 @@ public class OutPayHeader {
   private String claimId;
 
   @Column
-  private LocalDateTime tp2ProcessDate;
+  private LocalDate tp2ProcessDate;
 
 }
 
