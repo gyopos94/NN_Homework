@@ -35,7 +35,7 @@ class JobControllerTest {
   @Test
   void whenLaunchJobSuccessfully_thenReturnsSuccessMessage() throws Exception {
     when(jobLaunchingService.launchJob(anyString())).thenReturn(false); // Simulate successful job launch
-    mockMvc.perform(get("/launch-job").param("jobName", "SurValue")
+    mockMvc.perform(get("/api/v1/launch-job").param("jobName", "SurValue")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().string("Job launched successfully."));
@@ -44,7 +44,7 @@ class JobControllerTest {
   @Test
   void whenLaunchJobFails_thenReturnsFailureMessage() throws Exception {
     when(jobLaunchingService.launchJob(anyString())).thenReturn(true); // Simulate failed job launch
-    mockMvc.perform(get("/launch-job").param("jobName", "invalidJobName")
+    mockMvc.perform(get("/api/v1/launch-job").param("jobName", "invalidJobName")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isInternalServerError())
         .andExpect(content().string("Job failed to complete successfully."));
@@ -53,7 +53,7 @@ class JobControllerTest {
   @Test
   void whenLaunchJobThrowsException_thenReturnsErrorMessage() throws Exception {
     doThrow(new JobLaunchException("Error launching job", null)).when(jobLaunchingService).launchJob(anyString());
-    mockMvc.perform(get("/launch-job").param("jobName", "exceptionJobName")
+    mockMvc.perform(get("/api/v1/launch-job").param("jobName", "exceptionJobName")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isInternalServerError())
         .andExpect(content().string("Error launching job: Error launching job"));
