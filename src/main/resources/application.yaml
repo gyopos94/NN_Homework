@@ -15,12 +15,13 @@ spring:
   h2:
     console:
       enabled: true
+      path: /h2-console
   batch:
     job:
       enabled: false
 
 scheduler:
   cron:
-    survalue: 0 * * * * ? # Every 1 minute
-    policy: 0 0/5 * * * ? # Every 5 minutes
-    outpayheader: 0 0/5 * * * ? # Every 5 minutes
+    survalue: 0 0/5 * * * ? # Every 5 minutes
+    policy: 0 0/10 * * * ? # Every 10 minutes
+    outpayheader: 0 0/10 * * * ? # Every 10 minutes
